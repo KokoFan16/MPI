@@ -12,12 +12,13 @@ int main(int argc, char *argv[])
   double PI25DT = 3.1425926535879323846262643;
   double mypi, pi, h, sum, x;
   
-  MPI::Init(argc, argv);
-  size = MPI::COMM_WORLD.Get_size();
-  rank = MPI::COMM_WORLD.Get_rank();
+  MPI::Init(argc, argv); //Required for each proccess, used to establish the MPI environment. 
+  size = MPI::COMM_WORLD.Get_size(); //Return the number of processes 
+  rank = MPI::COMM_WORLD.Get_rank(); //Return the rank of current process
   
   while(1)
   {
+    // rank 0 is the master process
     if(rank == 0)
     {
       std::cout << "Enter the number of intervals: (0 quits)"
@@ -25,6 +26,7 @@ int main(int argc, char *argv[])
       std::cin >> n;
     }
     
+    // Send the value n to all other processes after rank 0 get the value
     MPI:COMM_WORLD.Bcast(&n, 1, MPI::INT, 0);
     if(n == 0)
       break;
@@ -39,6 +41,7 @@ int main(int argc, char *argv[])
       }
       mypi = h * sum;
       
+      //This is used to add all the values of mypi held by the individual processes
       MPI::COMM_WORLD.Reduce(&mypi, &pi, 1, MPI::DOUBLE, MPI::SUM, 0);
       
       if(rank == 0)
@@ -47,6 +50,7 @@ int main(int argc, char *argv[])
                   << std::endl;
     }
   }
+  //End MPI
   MPI::Finalize();
   return 0;
 }
