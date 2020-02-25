@@ -19,3 +19,6 @@ data size 255x255x255
 ## After
 
 ![1024_blurry](https://github.com/KokoFan16/MPI/blob/master/spatial_filter/255_blurry.png)
+
+## Performance
+![performance](https://github.com/KokoFan16/MPI/blob/master/spatial_filter/performance.png)
