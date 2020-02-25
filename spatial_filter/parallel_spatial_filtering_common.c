@@ -70,11 +70,7 @@ unsigned char * generate_filtering_matrix(int k, int i, int j, int dt_size, unsi
         for(b = mid*(-1); b < mid + 1; b++)
         {
             for(c = mid*(-1); c < mid + 1; c++)
-            {
-                //buf[(k + 1) * gbs[0] * gbs[1] + i * gbs[1] + j]
-                //ret[index] = (k + a) * gbs[0] * gbs[1] + ((i + b) * gbs[1]) + (j + c);
-                //index += 1;
-                
+            {                
                 index = (k + a) * gbs[0] * gbs[1] + ((i + b) * gbs[1]) + (j + c);
                 
                 if(dt_size == 1)
@@ -211,12 +207,7 @@ int main(int argc, char **argv)
         MPI_Waitall(4, reqs, stats);
     }
     
-    double communication_end = MPI_Wtime();
-    
-    
-    
- 
-    
+    double communication_end = MPI_Wtime();   
     
     // PERFORM THE ACTUAL BLURING OPERATION
     double compute_start = MPI_Wtime();
@@ -239,119 +230,6 @@ int main(int argc, char **argv)
         slices = gbs[2]/nprocs;
     }
     
-    
-    // Spatial Filtering
-    // Skip the border pixels for bluring
-    //uint16
-    
-    /*
-    if (dt_size == 2)
-    {
-        short x = 0;
-    
-        // Low-passing filtering
-        int i = 1, j = 1, k = 1;
-        for(k = border; k < slices - border; k++)
-        {
-            for(i = border; i < gbs[0] - border; i++)
-            {
-                for(j = border; j < gbs[1] - border; j++)
-                {
-                    short y = 0;
-                    int *ind = generate_filtering_matrix((k + border), i, j);
-                    
-                    int m = 0;
-                    for(m = 0; m < avg_value; m++)
-                    {
-                        memcpy(&x, &buf[ind[m] * dt_size], sizeof(short));
-                        y += x/avg_value;
-                    }
-                    //bbuffer[(k * gbs[0] * gbs[1] + i * gbs[1] + j) * dt_size] = y;
-                    memcpy(&bbuffer[(k * gbs[0] * gbs[1] + i * gbs[1] + j) * dt_size], &y, sizeof(short));
-                }
-            }
-        }
-        
-        // For the ghost cells from the last rank (rank + 1)
-        // The first border slices
-        if(rank != 0)
-        {
-            int k = 0, i = 1, j = 1;
-            for(k = 0; k < border; k++)
-            {
-                for(i = border; i < gbs[0] - border; i++)
-                {
-                    for(j = border; j < gbs[1] - border; j++)
-                    {
-                        short y = 0;
-                        int *ind = generate_filtering_matrix((k + border), i, j);
-                        
-                        int m = 0;
-                        for(m = 0; m < avg_value; m++)
-                        {
-                            //bbuffer[i * gbs[1] + j] += buf[ind[m]]/avg_value;
-                            memcpy(&x, &buf[ind[m] * dt_size], sizeof(short));
-                            y += x/avg_value;
-                        }
-                        //bbuffer[(k * gbs[0] * gbs[1] + i * gbs[1] + j) * dt_size] = y;
-                        memcpy(&bbuffer[(k * gbs[0] * gbs[1] + i * gbs[1] + j) * dt_size], &y, sizeof(short));
-                    }
-                }
-            }
-        }
-        
-        
-        
-        // For the ghost cells from next rank (rank + 1)
-        // The last border slices
-        if(rank != nprocs - 1)
-        {
-            int k = 0, i = 1, j = 1;
-            for(k = slices - border; k < slices; k++)
-            {
-                for(i = border; i < gbs[0] - border; i++)
-                {
-                    for(j = border; j < gbs[1] - border; j++)
-                    {
-                        short y = 0;
-                        int *ind = generate_filtering_matrix((k + border), i, j);
-                        
-                        int m = 0;
-                        for(m = 0; m < avg_value; m++)
-                        {
-                            //bbuffer[last_slice + i * gbs[1] + j] += buf[ind[m]]/avg_value;
-                            memcpy(&x, &buf[ind[m] * dt_size], sizeof(short));
-                            y += x/avg_value;
-                        }
-                        //bbuffer[(k * gbs[0] * gbs[1] + i * gbs[1] + j) * dt_size] = y;
-                        memcpy(&bbuffer[(k * gbs[0] * gbs[1] + i * gbs[1] + j) * dt_size], &y, sizeof(short));
-                    }
-                }
-            }
-        }
-    }
-    
-    
-    //uint8
-    else
-    {
-     
-     */
-    
-    
-
-    
-    /*
-    if(dt_size == 2)
-    {
-        test.s = 0;
-    }
-    
-    printf("The size of bar.value.s is %d \n", sizeof(test.s));
-     */
-    
-    //data1.s = 0;
-    
     int i = 1, j = 1, k = 1;
     for(k = border; k < slices - border; k++)
     {
@@ -359,32 +237,13 @@ int main(int argc, char **argv)
         {
             for(j = border; j < gbs[1] - border; j++)
             {
-                
                 unsigned char * ret = generate_filtering_matrix((k + border), i, j, dt_size, buf);
                 memcpy(&bbuffer[(k * gbs[0] * gbs[1] + i * gbs[1] + j) * dt_size], ret, dt_size);
-                
-                 //memcpy(&blur_buf[(k * gbs[0] * gbs[1] + i * gbs[1] + j) * dt_size], &data2.s, dt_size);
-                /*
-                data2.s = 0;
-                int *ind = generate_filtering_matrix((k + border), i, j);
-                
-                int m = 0;
-                for(m = 0; m < avg_value; m++)
-                {
-                 
-                    //memcpy(&bar.value.s, &buf[m * dt_size], dt_size);
-                    memcpy(&data1.s, &buf[ind[m] * dt_size], dt_size);
-                    data2.s += data1.s/avg_value;
-                }
-                //bbuffer[(k * gbs[0] * gbs[1] + i * gbs[1] + j * dt_size)] += buf[m]/avg_value;
-                memcpy(&bbuffer[(k * gbs[0] * gbs[1] + i * gbs[1] + j) * dt_size], &data2.s, dt_size);
-                 */
             }
         }
     }
 
     // For the ghost cells from last rank (rank -1), which is stored in the first slice.
-    // k = 1
     if(rank != 0)
     {
         //int k = 0, i = 1, j = 1;
@@ -393,35 +252,18 @@ int main(int argc, char **argv)
             for(i = border; i < gbs[0] - border; i++)
             {
                 for(j = border; j < gbs[1] - border; j++)
-                {
-                    
+                { 
                     unsigned char * ret = generate_filtering_matrix((k + border), i, j, dt_size, buf);
                     
                     if (ret[0] != 0 )
                         printf ("The value ret[0] is %d of (i %d, j %d, k %d) from rank %d\n", ret[0], i, j, k, rank);
                     
                     memcpy(&bbuffer[(k * gbs[0] * gbs[1] + i * gbs[1] + j) * dt_size], ret, dt_size);
-                    /*
-                    data2.s = 0;
-                    int *ind = generate_filtering_matrix((k + border), i, j);
-                    
-                    int m = 0;
-                    for(m = 0; m < avg_value; m++)
-                    {
-                         //memcpy(&bar.value.s, &buf[m * dt_size], dt_size);
-                        memcpy(&data1.s, &buf[ind[m] * dt_size], dt_size);
-                        data2.s += data1.s/avg_value;
-                        //bbuffer[(k * gbs[0] * gbs[1] + i * gbs[1] + j * dt_size)] += buf[m]/avg_value;
-                    }
-                    memcpy(&bbuffer[(k * gbs[0] * gbs[1] + i * gbs[1] + j) * dt_size], &data2.s, dt_size);
-                     */
                 }
             }
         }
     }
-
-
-
+    
     // For the ghost cells from next rank (rank + 1)
     if(rank != nprocs - 1)
     {
@@ -438,26 +280,10 @@ int main(int argc, char **argv)
                         printf ("The value ret[0] is %d of (i %d, j %d, k %d) from rank %d\n", ret[0], i, j, k, rank);
                     
                     memcpy(&bbuffer[(k * gbs[0] * gbs[1] + i * gbs[1] + j) * dt_size], ret, dt_size);
-                    /*
-                    data2.s = 0;
-                    int *ind = generate_filtering_matrix((k + border), i, j);
-//
-                    int m = 0;
-                    for(m = 0; m < avg_value; m++)
-                    {
-                        memcpy(&data1.s, &buf[ind[m] * dt_size], dt_size);
-                        data2.s += data1.s/avg_value;
-                         //memcpy(&bar.value.s, &buf[m * dt_size], dt_size);
-                         //bbuffer[(k * gbs[0] * gbs[1] + i * gbs[1] + j * dt_size)] += buf[m]/avg_value;
-                    }
-                    memcpy(&bbuffer[(k * gbs[0] * gbs[1] + i * gbs[1] + j) * dt_size], &data2.s, dt_size);
-                     */
                 }
             }
         }
     }
-       
-   // }
     
     double compute_end = MPI_Wtime();
     
@@ -481,7 +307,6 @@ int main(int argc, char **argv)
     
     double io_write_end = MPI_Wtime();
     
-    
     free(buf);
     free(bbuffer);
     
@@ -497,13 +322,8 @@ int main(int argc, char **argv)
                (compute_end - compute_start),
                (io_write_end - io_write_start));
     }
-    
-
     MPI_Finalize();
-    
 }
-
-
 
 // Parse the arguments
 // There are four arguments: -g, -f, -i, -m
@@ -537,4 +357,3 @@ static void parse_args(int argc, char **argv)
         }
     }
 }
-
